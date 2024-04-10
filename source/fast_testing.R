@@ -7,8 +7,8 @@ source("source/functions.R")
 
 
 # read & filter
-GMT <- mulea::read_gmt(file = "input/test.GMT") %>%
-  mulea::filter_ontology(., min_nr_of_elements = 3, max_nr_of_elements = 400)
+GMT <- mulea::filter_ontology(mulea::read_gmt(file = "input/test.GMT"),
+                              min_nr_of_elements = 3, max_nr_of_elements = 400)
 
 bg <- unique(unlist(GMT$list_of_values))
 

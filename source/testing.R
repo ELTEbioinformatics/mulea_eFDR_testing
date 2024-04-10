@@ -6,8 +6,9 @@ source("source/functions.R")
 # on the server:
 
 # read & filter
-GMT <- mulea::read_gmt(file = "input/Transcription_factor_Yeastract_Saccharomyces_cerevisiae_UniprotID.gmt") %>%
-  filter_ontology(., min_nr_of_elements = 3, max_nr_of_elements = 400)
+GMT <- mulea::filter_ontology(
+  mulea::read_gmt(file = "input/Transcription_factor_Yeastract_Saccharomyces_cerevisiae_UniprotID.gmt"),
+  min_nr_of_elements = 3, max_nr_of_elements = 400)
 
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # Tests calculations ---------------------------------------------------------
