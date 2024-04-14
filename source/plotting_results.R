@@ -1,33 +1,18 @@
 library(tidyverse)
 library(magrittr)
-# library(ggpointdensity) # geom_pointdensity
-# library(ggnewscale) # new_scale_color
-# library(ggpubr) # ggarrange
-# library(patchwork) # plot_layout
 library(ggblend) # blend
 
+set.seed(1)
 #xxxxxxxxxxxxxxxxxxxxxx
 # Tidy the tables ----------------------------------------------------
 #xxxxxxxxxxxxxxxxxxxxxx
+
+sim_mult_tests_res_sum <- readRDS("output/sim_mult_tests_res_sum_more_noise.Rds")
+
 #xxxxxxxxx
 ## Summary table ----
 #xxxxxxxxx
 sim_mult_tests_res_sum %<>%
-  # change names in method
-  mutate(method = case_match(method,
-                             "p_value" ~ "Uncorrected p-value",
-                             "adjusted_p_value" ~ "Benjamini-Hochbeg FDR",
-                             .default = method)) %>%
-  # factorize method
-  mutate(method = factor(method,
-                         levels = c("Uncorrected p-value",
-                                    "Benjamini-Hochbeg FDR",
-                                    "eFDR")))
-
-#xxxxxxxxx
-## ROC table ----
-#xxxxxxxxx
-sim_mult_tests_res_roc %<>%
   # change names in method
   mutate(method = case_match(method,
                              "p_value" ~ "Uncorrected p-value",
@@ -44,6 +29,8 @@ sim_mult_tests_res_roc %<>%
 #xxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 sim_mult_tests_res_sum %>%
+  # subsample percentage
+  sample_frac(size = 0.5) %>%
   filter(method != "Uncorrected p-value") %>%
   # rewrite noise_ratio
   mutate(noise_ratio = paste0("Noise ratio: ", noise_ratio)) %>%
@@ -60,7 +47,7 @@ sim_mult_tests_res_sum %>%
 
 # can be saved manually only
 # png: width 700 height 900
-# pdf: width 7 height 9 inch, cairo
+# pdf: width 7 height 7.5 inch, cairo
 
 # the resolution of the png is low
 # to convert the pdf to good resolution png:
@@ -101,39 +88,7 @@ names(t_test_pvals_TPRs) <- unique(sim_mult_tests_res_sum$noise_ratio)
 rm(eFDR, BH, test, i)
 
 t_test_pvals_TPRs
-
-
-#xxxxxxxxxxxxxxxxxxxxx
-# Precision - Recall plot -------------------------------------------------
-#xxxxxxxxxxxxxxxxxxxxx
-
-sim_mult_tests_res_sum %>%
-  filter(method != "Uncorrected p-value") %>%
-  # exclude noise 0.9
-  filter(noise_ratio != 0.9) %>%
-  # rewrite noise_ratio
-  mutate(noise_ratio = paste0("Noise ratio: ", noise_ratio)) %>%
-  ggplot(aes(x = Recall, y = Precision, color = method)) +
-  geom_point(size = 0.1, alpha = 0.1)  * (blend("lighten") + blend("multiply", alpha = 0.1)) +
-  # regression
-  geom_line(stat = "smooth", method = "loess", formula = y ~ x, linewidth = 0.7) +
-  scale_color_brewer(palette = "Set1", name = "p-value correction method") +
-  facet_wrap( ~ noise_ratio) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-
-#xxxxxxxxxx
-# ROC density curve plot -----------------------------------------------------
-#xxxxxxxxxx
-sim_mult_tests_res_roc %>%
-  ggplot(aes(x = FPR,
-             y = TPR,
-             color = method)) +
-  geom_point(alpha = 0.3) +
-  stat_density_2d(geom = "point", aes(size = after_stat(density)), n = 20,
-                  contour = FALSE, alpha = 0.3) +
-  scale_radius(range = c(-0.5, 15)) +
-  scale_color_brewer(palette = "Set1", name = "p-value correction method") +
-  theme_bw() +
-  theme(legend.position = "bottom")
+#             0           0.1           0.2           0.3           0.4
+# 9.017472e-213 1.997708e-219 2.137203e-222 3.791461e-226 5.159119e-231
+#           0.5           0.6           0.7           0.8
+# 6.564688e-232 1.055894e-236 3.918375e-246 1.091873e-295

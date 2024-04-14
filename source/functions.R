@@ -1,3 +1,4 @@
+library(dplyr)
 # PUBLIC API
 #' @description
 #' \code{decorateGmtByUnderOvenAndNoise}
@@ -83,66 +84,6 @@ generateInputSamples <- function(input_gmt_decorated,
   return(samples)
 }
 
-# PUBLIC API
-#' @description
-#' \code{getSummaryToRoc}
-#'
-#' \code{getSummaryToRoc} generate artificial GO with specific terms under or
-#' over represented.
-#'
-#' @param tests_res list of multiple tests results.
-#' @return Return data frame which is the base to count ROC.
-#' @noRd
-#' @importFrom magrittr %>%
-#' @importFrom plyr .
-#' @importFrom rlang .data
-getSummaryToRoc <- function(tests_res,
-                            cut_off_resolution = 0.01,
-                            methods_names = c("p_value", "adjusted_p_value", "eFDR")) {
-  number_of_tests <- length(tests_res)
-  data_to_roc <- data.frame("sample_label" = c(),
-                            "p_value" = c(),
-                            "adjusted_p_value" = c(),
-                            "eFDR" = c())
-  for (i in seq_len(number_of_tests)) {
-    tests_res[[i]]$mulea_res[, c("p_value",
-                                 "adjusted_p_value",
-                                 "eFDR")]
-    data_to_roc <- rbind(data_to_roc, data.frame("sample_label" = tests_res[[i]]$test_data[, c("sample_label")],
-                                                 tests_res[[i]]$mulea_res[, c("p_value", "adjusted_p_value", "eFDR")]))
-    }
-  roc_stats <- tibble::tibble(TP_val = numeric(),
-                              TN_val = numeric(),
-                              FP_val = numeric(),
-                              FN_val = numeric(),
-                              TPR = numeric(),
-                              FPR = numeric(),
-                              sum_test = numeric(),
-                              cut_off = numeric(),
-                              method = character())
-  for (method_name in methods_names) {
-    for (cut_off in seq(0, 1, cut_off_resolution)) {
-      sim_mult_tests_res_to_roc_summary <- data_to_roc %>%
-        dplyr::mutate(PP = !!as.name(method_name) <= cut_off) %>%
-        dplyr::mutate(TP = (.data$PP == TRUE & .data$sample_label == "over"),
-                      TN = (.data$PP == FALSE & .data$sample_label != "over"),
-                      FP = (.data$PP == TRUE & .data$sample_label != "over"),
-                      FN = (.data$PP == FALSE & .data$sample_label == "over"))
-      sim_sum <- sim_mult_tests_res_to_roc_summary %>%
-        dplyr::summarise(TP_val = sum(.data$TP),
-                         TN_val = sum(.data$TN),
-                         FP_val = sum(.data$FP),
-                         FN_val = sum(.data$FN))
-      sim_sum_roc <- sim_sum %>%
-        dplyr::mutate(TPR = .data$TP_val/(.data$TP_val + .data$FN_val),
-                      FPR = .data$FP_val / (.data$FP_val + .data$TN_val),
-                      sum_test = .data$TP_val + .data$TN_val + .data$FP_val + .data$FN_val,
-                      cut_off = cut_off,
-                      method = method_name)
-      roc_stats <- roc_stats %>%
-        tibble::add_row(sim_sum_roc)}}
-  return(roc_stats)
-}
 
 # PUBLIC API
 #' @description

@@ -22,19 +22,16 @@ sim_mult_tests_res <- simulateMultipleTestsWithRatioParam(
 
 saveRDS(sim_mult_tests_res, "output/sim_mult_tests_res_more_noise.Rds")
 
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# on my PC -------------------------------------------------------------------
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+sim_mult_tests_res <- readRDS("output/sim_mult_tests_res_more_noise.Rds")
+
 sim_mult_tests_res_sum <- getMultipleTestsSummaryAcrossCutOff(
   tests_res = sim_mult_tests_res,
   cut_off_range = seq(0, 1, 0.1))
 
 saveRDS(sim_mult_tests_res_sum, "output/sim_mult_tests_res_sum_more_noise.Rds")
-
-sim_mult_tests_res_roc <- getSummaryToRoc(sim_mult_tests_res)
-
-saveRDS(sim_mult_tests_res_to_roc, "output/sim_mult_tests_res_to_roc_more_noise.Rds")
-
-save.image()
-
-q()
 
 
 
