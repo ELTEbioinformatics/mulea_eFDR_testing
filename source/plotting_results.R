@@ -9,29 +9,20 @@ set.seed(1)
 
 sim_mult_tests_res_sum <- readRDS("output/sim_mult_tests_res_sum_more_noise.Rds")
 
-#xxxxxxxxx
-## Summary table ----
-#xxxxxxxxx
-sim_mult_tests_res_sum %<>%
-  # change names in method
-  mutate(method = case_match(method,
-                             "p_value" ~ "Uncorrected p-value",
-                             "adjusted_p_value" ~ "Benjamini-Hochbeg FDR",
-                             .default = method)) %>%
-  # factorize method
-  mutate(method = factor(method,
-                         levels = c("Uncorrected p-value",
-                                    "Benjamini-Hochbeg FDR",
-                                    "eFDR")))
-
 #xxxxxxxxxxxxxxxxxxxxxxxxxxx
 # TPR - FPR plot -----------------------------------------------------------
 #xxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 sim_mult_tests_res_sum %>%
+  filter(method != "p_value") %>%
   # subsample percentage
   sample_frac(size = 0.5) %>%
-  filter(method != "Uncorrected p-value") %>%
+  # change names in method
+  mutate(method = case_match(method,
+                             "adjusted_p_value" ~ "Benjamini-Hochbeg FDR",
+                             .default = method)) %>%
+  # factorize method
+  mutate(method = factor(method, levels = c("eFDR", "Benjamini-Hochbeg FDR"))) %>%
   # rewrite noise_ratio
   mutate(noise_ratio = paste0("Noise ratio: ", noise_ratio)) %>%
   ggplot(aes(x = FPR, y = TPR, color = method)) +
