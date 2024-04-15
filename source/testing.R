@@ -35,5 +35,3 @@ saveRDS(sim_mult_tests_res_sum, "output/sim_mult_tests_res_sum_more_noise.Rds")
 
 
 
-
-
