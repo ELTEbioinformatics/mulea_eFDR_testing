@@ -10,7 +10,42 @@ set.seed(1)
 sim_mult_tests_res_sum <- readRDS("output/sim_mult_tests_res_sum_more_noise.Rds")
 
 #xxxxxxxxxxxxxxxxxxxxxxxxxxx
-# TPR - FPR plot -----------------------------------------------------------
+# TPR - FPR plot 0 - 0.3 noise level -----------------------------------------------------------
+#xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+sim_mult_tests_res_sum %>%
+  filter(method != "p_value" & noise_ratio <= 0.3) %>%
+  # subsample percentage
+  sample_frac(size = 0.5) %>%
+  # change names in method
+  mutate(method = case_match(method,
+                             "adjusted_p_value" ~ "Benjamini-Hochbeg FDR",
+                             .default = method)) %>%
+  # factorize method
+  mutate(method = factor(method, levels = c("eFDR", "Benjamini-Hochbeg FDR"))) %>%
+  # rewrite noise_ratio
+  mutate(noise_ratio = paste0("Noise ratio: ", noise_ratio)) %>%
+  ggplot(aes(x = FPR, y = TPR, color = method)) +
+  geom_point(size = 0.1, alpha = 0.1)  * (blend("lighten") + blend("multiply", alpha = 0.1)) +
+  # regression
+  geom_line(stat = "smooth", method = "loess", formula = y ~ x, linewidth = 0.7) +
+  xlab("False positive rate") +
+  ylab("True positive rate") +
+  scale_color_brewer(palette = "Set1", name = "p-value correction method") +
+  facet_wrap( ~ noise_ratio) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+# can be saved manually only
+# pdf: width 4.6 height 4.8 inch, cairo
+
+# the resolution of the png is low
+# to convert the pdf to good resolution png:
+# convert -density 300 -trim output/TPR_FPR_subsample_0.5_noise_0-0.3.pdf -quality 100 output/TPR_FPR_subsample_0.5_noise_0-0.3.png
+
+
+#xxxxxxxxxxxxxxxxxxxxxxxxxxx
+# TPR - FPR plot 0 - 0.9 noise level -----------------------------------------------------------
 #xxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 sim_mult_tests_res_sum %>%
@@ -37,12 +72,11 @@ sim_mult_tests_res_sum %>%
   theme(legend.position = "bottom")
 
 # can be saved manually only
-# png: width 700 height 900
 # pdf: width 7 height 7.5 inch, cairo
 
 # the resolution of the png is low
 # to convert the pdf to good resolution png:
-# convert -density 300 -trim TFLink_final_figure_v2.pdf -quality 100 TFLink_final_figure_v2b.png
+# convert -density 300 -trim TPR_FPR_subsample_0.5.pdf -quality 100 TPR_FPR_subsample_0.5.png
 
 
 #xxxxxxxxxxxxxxxxxxxxx
@@ -76,7 +110,7 @@ for(i in unique(sim_mult_tests_res_sum$noise_ratio)) {
 
 names(t_test_pvals_TPRs) <- unique(sim_mult_tests_res_sum$noise_ratio)
 # p-value < 2.2e-16 for all
-rm(eFDR, BH, test, i)
+rm(eFDR, BH, test, i, sim_mult_tests_res_sum)
 
 t_test_pvals_TPRs
 #             0           0.1           0.2           0.3           0.4
