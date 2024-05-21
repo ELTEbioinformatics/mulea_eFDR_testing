@@ -15,7 +15,7 @@ GMT <- mulea::filter_ontology(
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 sim_mult_tests_res <- simulateMultipleTestsWithRatioParam(
   input_gmt_filtered = GMT,
-  noise_ratio_range = seq(0.0, 0.8, 0.1),
+  noise_ratio_range = c(0, 0.1, 0.2, 0.3),
   over_repr_ratio = 0.85,
   number_of_tests = 1000,
   nthreads = 16)

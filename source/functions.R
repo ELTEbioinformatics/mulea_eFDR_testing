@@ -1,3 +1,86 @@
+#xxxxxxxxxxxxxxxxxxxxxxxx
+# calculating mean and SD of overlapping genes in GMT files ---------------
+#xxxxxxxxxxxxxxxxxxxxxxxx
+
+GMT_statistics_func <- function(GMT_variable) {
+  # list of vectors containing elements
+  GMT_element_list <- GMT_variable %>%
+    select(list_of_values) %>%
+    pull()
+
+  # Lengths
+  lengths <- sapply(GMT_element_list, length)
+
+  # Intersections
+  # all 2 length combinations of vectors
+  combinations <- combn(length(GMT_element_list), 2)
+
+  # Calculate the overlapping elements
+  pairwise_intersections <- apply(combinations, 2, function(indices) {
+    intersect(GMT_element_list[[indices[1]]], GMT_element_list[[indices[2]]])
+  })
+
+  # To get the lengths of the intersections
+  pairwise_intersection_lengths <- sapply(pairwise_intersections, length)
+
+  # Output
+  # create a vector containing the statistics
+  results <- c(
+    nr_of_terms = length(GMT_element_list),
+    mean_nr_of_elements = mean(lengths),
+    sd_nr_of_elements = sd(lengths),
+    median_nr_of_elements = median(lengths),
+    mean_nr_of_common_elements_between_2_terms = mean(pairwise_intersection_lengths),
+    sd_nr_of_common_elements_between_2_terms = sd(pairwise_intersection_lengths),
+    median_nr_of_common_elements_between_2_terms = median(pairwise_intersection_lengths)
+  )
+  return(results)
+}
+# GMT <- read_gmt(file = "input/TFLink_Homo_sapiens_interactions_SS_GMT_proteinName_v1.0.gmt") %>%
+#   filter_ontology(., min_nr_of_elements = 5, max_nr_of_elements = 400)
+#
+# GMT_statistics_func(GMT_variable = GMT)
+# nr_of_terms
+# 331.000000
+# mean_nr_of_elements
+# 34.190332
+# sd_nr_of_elements
+# 52.086089
+# median_nr_of_elements
+# 15.000000
+# mean_nr_of_common_elements_between_2_terms
+# 1.024389
+# sd_nr_of_common_elements_between_2_terms
+# 2.777999
+# median_nr_of_common_elements_between_2_terms
+# 0.000000
+
+#xxxxxxxxxxxxxxxxxxxxx
+# getMultipleTestsSummaryAcrossCutOff -------------------------------------
+#xxxxxxxxxxxxxxxxxxxxx
+
+getMultipleTestsSummaryAcrossCutOff <- function(tests_res,
+                                                cut_off_range = seq(0, 1, 0.1)) {
+  tests_res_sum <- NULL
+  for (cut_off in cut_off_range) {
+    tests_res_sum_p <- getMultipleTestsSummary(tests_res = tests_res,
+                                               comparison_col_name = 'p_value',
+                                               labels = list('method' = 'p', 'cut_off' = cut_off),
+                                               cut_off = cut_off)
+    tests_res_sum_bh <- getMultipleTestsSummary(tests_res = tests_res,
+                                                comparison_col_name = 'adjustedPValue',
+                                                labels = list('method' = 'bh', 'cut_off' = cut_off),
+                                                cut_off = cut_off)
+    tests_res_sum_pt <- getMultipleTestsSummary(tests_res = tests_res,
+                                                comparison_col_name = 'eFDR',
+                                                labels = list('method' = 'pt', 'cut_off' = cut_off),
+                                                cut_off = cut_off)
+    tests_res_sum <- rbind(tests_res_sum, tests_res_sum_p,
+                           tests_res_sum_pt, tests_res_sum_bh)}
+  return(tests_res_sum)
+}
+
+
 library(dplyr)
 # PUBLIC API
 #' @description
