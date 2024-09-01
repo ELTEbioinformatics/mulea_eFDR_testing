@@ -12,8 +12,7 @@ source("source/functions.R")
 # Read all GMT files ------------------------------------------------------
 #xxxxxxxxxxxxxxxxxxxxxxxx
 # Set the location of the folders containing the GMT files of each taxon
-GMT_dir = "/home/barizona/Eszter/Kutatas/MulEA/GMT_files/GMT_files_for_mulea-main/GMT_files"
-GMT_dir = "../../GMT_files/GMT_files_for_mulea-main/GMT_files"
+GMT_dir = "input/GMT_files"
 
 # names of all GMT files
 GMT_file_names <- list.files(path = GMT_dir, recursive = TRUE, full.names = TRUE)
@@ -70,9 +69,15 @@ GMT_statistics_matrix %<>%
   # relocate the GMT_file_names to the beginning
   relocate(GMT_file_names, .before = nr_of_terms)
 
+GMT_statistics_matrix %>%
+  write_tsv("output/GMT_statistics_matrix.tsv")
+
+
+GMT_statistics_matrix <- read_tsv("output/GMT_statistics_matrix.tsv")
+
 # top 1 GMT file with the highest mean number of elements
 GMT_statistics_matrix %>%
-  arrange(desc(mean_nr_of_elements)) %>%
+  arrange(desc(mean_nr_of_common_elements_between_2_terms)) %>%
   head(1) %>%
   select(GMT_file_names, mean_nr_of_common_elements_between_2_terms)
 # GMT_file_names                                                                                  mean_nr_of_common_el…¹
@@ -83,3 +88,4 @@ GMT_statistics_matrix %>%
 mean(GMT_statistics_matrix$mean_nr_of_common_elements_between_2_terms,
        na.rm = TRUE)
 # 1.026056
+

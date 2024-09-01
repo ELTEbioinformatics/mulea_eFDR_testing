@@ -433,8 +433,8 @@ simulateMultipleTests <- function(input_gmt_filtered,
     mulea_ora_model_2 <- mulea::ora(gmt = input_gmt_filtered,
                                     element_names = input_select,
                                     p_value_adjustment_method = "BH",
-                                    number_of_permutations = number_of_steps,
-                                    nthreads = nthreads)
+                                    # number_of_permutations = number_of_steps,
+                                    nthreads = 1)
     mulea_ora_results_2 <- mulea::run_test(mulea_ora_model_2)
     # Join of the 2 results
     mulea_ora_results <- merge(mulea_ora_results,
